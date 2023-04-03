@@ -1,20 +1,28 @@
 on:
   repository_dispatch:
-    types: [submodule-sync]
+    types: [ submodule-sync ]
 
 jobs:
   update-submodules:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout monorepo
-      uses: actions/checkout@v2
-      with:
-        submodules: 'recursive'
-    - name: Update submodules
-      run: |
-        git submodule update --remote
-        git add .
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git commit -m "Update submodules"
-        git push
+      - name: Checkout monorepo
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.PAT }}
+      - name: Authenticate with GitHub
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git config --global credential.helper store
+          git config --global credential.helper 'cache --timeout=3600'
+          echo "${{ secrets.PAT_TOKEN }}" | git credential-store --file ~/.git-credentials store
+      - name: Update submodules
+        run: |
+          git submodule update --remote
+          git add .
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Update submodules"
+          git push
