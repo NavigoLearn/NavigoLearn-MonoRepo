@@ -1,0 +1,9 @@
+# idea
+.idea
+
+# vscode
+.vscode
+
+# nodejs sstuff
+node_modules
+dist
