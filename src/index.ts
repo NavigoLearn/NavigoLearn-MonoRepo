@@ -1,18 +1,40 @@
 import express from 'express';
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
+import path from "path";
+
 const env = process.env.NODE_ENV || "dev";
 const isProd = env === "prod";
 
+console.log("Starting Navigo in " + env + " mode");
+// installing dependencies
+console.log("Installing dependencies...");
+const npmInstall = spawnSync("npm", ["install"], {
+  cwd: path.join(__dirname, "frontend"),
+  stdio: "inherit",
+});
+if (npmInstall.status !== 0) {
+  console.error("Failed to install frontend dependencies");
+  process.exit(1);
+}
+const npmInstall2 = spawnSync("npm", ["install"], {
+  cwd: path.join(__dirname, "api"),
+  stdio: "inherit",
+});
+if (npmInstall2.status !== 0) {
+  console.error("Failed to install api dependencies");
+  process.exit(1);
+}
+
 // setup prefix to stdout and stderr
-const prefix = '[Navigo] '
+const globalPrefix = '[Navigo] '
 const stdoutWrite = process.stdout.write;
 // @ts-ignore
 process.stdout.write = function (
   chunk: string | Buffer,
   encoding: BufferEncoding | undefined,
   callback?: () => void): boolean {
-  const modifiedChunk = Buffer.from(prefix + chunk.toString(), 'utf-8');
+  const modifiedChunk = Buffer.from(globalPrefix + chunk.toString(), 'utf-8');
   return stdoutWrite.call(process.stdout, modifiedChunk, encoding, callback);
 };
 
@@ -22,7 +44,7 @@ process.stderr.write = function (
   chunk: string | Buffer,
   encoding: BufferEncoding | undefined,
   callback?: () => void): boolean {
-  const modifiedChunk = Buffer.from(prefix + chunk.toString(), 'utf-8');
+  const modifiedChunk = Buffer.from(globalPrefix + chunk.toString(), 'utf-8');
   return stderrWrite.call(process.stderr, modifiedChunk, encoding, callback);
 }
 
@@ -44,26 +66,37 @@ app.listen(env === "prod" ? 80 : 8080, () => {
   console.log("Server listening on port " + (isProd ? 80 : 8080));
 });
 
-// spawn child process in frontend folder
-const frontendPrefix = '[Frontend] '
+// logger
+const logger = (prefix: string, data: any) => {
+  // check if data toString is empty or new line
+  data = data.toString().trim()
+  // replace new line with new line + prefix
+  data = data.replaceAll(
+    '\n',
+    `\n${Array(prefix.length+globalPrefix.length).fill(' ').join('')}`)
+
+  if (data === "") return;
+  console.log(prefix + data);
+}
+
+// spawn a child process in frontend folder
 const frontend = spawn("npm", ["run", isProd ? "start" : "dev"], {
-  cwd: "./frontend",
+  cwd: path.join(__dirname, "frontend"),
   stdio: ["inherit", "pipe", "pipe"],
 });
-const frontendLog = (data: any) => {
-  console.log(frontendPrefix + data.toString());
-};
-frontend.stdout.on("data", frontendLog);
-frontend.stderr.on("data", frontendLog);
+frontend.stdout.on("data", (data) => logger("[Frontend] ", data));
+frontend.stderr.on("data", (data) => logger("[Frontend] ", data));
 
 // spawn child process in api folder
-const apiPrefix = '[API] '
 const api = spawn("npm", ["run", isProd ? "start" : "dev"], {
-  cwd: "./api",
+  cwd: path.join(__dirname, "api"),
   stdio: ["inherit", "pipe", "pipe"],
 });
-const apiLog = (data: any) => {
-  console.log(apiPrefix + data.toString());
-}
-api.stdout.on("data", apiLog);
-api.stderr.on("data", apiLog);
+api.stdout.on("data", (data) => logger("[API] ", data));
+api.stderr.on("data", (data) => logger("[API] ", data));
+
+// kill child processes on exit
+process.on("exit", () => {
+  frontend.kill();
+  api.kill();
+});
