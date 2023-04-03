@@ -1,6 +1,6 @@
 on:
   repository_dispatch:
-    types: [submodule-update]
+    types: [submodule-sync]
 
 jobs:
   update-submodules:
