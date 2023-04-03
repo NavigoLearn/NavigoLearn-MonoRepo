@@ -1,0 +1,20 @@
+on:
+  repository_dispatch:
+    types: [submodule-update]
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout monorepo
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Update submodules
+      run: |
+        git submodule update --remote
+        git add .
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "Update submodules"
+        git push
