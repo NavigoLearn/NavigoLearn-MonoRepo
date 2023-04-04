@@ -9,6 +9,12 @@ This is the glue between the frontend and the API.
 It is a simple nodejs server that serves the 
 frontend and backend via a proxy so they're on the same port.
 
+## Requirements
+  - Git
+  - NodeJS
+  - NPM
+  - MariaDB
+
 ## How to run
 ```bash
 git clone --recurse-submodules https://github.com/NavigoLearn/API.git
