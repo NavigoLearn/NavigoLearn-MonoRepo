@@ -17,7 +17,7 @@ frontend and backend via a proxy so they're on the same port.
 
 ## How to run
 ```bash
-git clone --recurse-submodules https://github.com/NavigoLearn/API.git
+git clone --recurse-submodules https://github.com/NavigoLearn/NavigoLean-MonoRepo.git
 cd API
 npm install
 npm run dev

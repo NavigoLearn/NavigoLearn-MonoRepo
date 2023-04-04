@@ -2,14 +2,16 @@ import express from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { spawn, spawnSync } from "child_process";
 import path from "path";
+import * as os from "os";
 
+let npm = os.platform.toString() === "win32" ? "npm.cmd" : "npm";
 const env = process.env.NODE_ENV || "dev";
 const isProd = env === "prod";
 
 console.log("Starting Navigo in " + env + " mode");
 // installing dependencies
-
-const npmInstall = spawnSync("npm.cmd", ["install"], {
+console.log("Installing dependencies...");
+const npmInstall = spawnSync(npm, ["install"], {
   cwd: path.join(__dirname, "frontend"),
   stdio: "inherit",
 });
@@ -18,7 +20,7 @@ if (npmInstall.status !== 0) {
   console.error("Failed to install frontend dependencies");
   process.exit(1);
 }
-const npmInstall2 = spawnSync("npm.cmd", ["install"], {
+const npmInstall2 = spawnSync(npm, ["install"], {
   cwd: path.join(__dirname, "api"),
   stdio: "inherit",
 });
@@ -87,7 +89,7 @@ const logger = (prefix: string, data: any) => {
 };
 
 // spawn a child process in frontend folder
-const frontend = spawn("npm.cmd", ["run", isProd ? "start" : "dev"], {
+const frontend = spawn(npm, ["run", isProd ? "start" : "dev"], {
   cwd: path.join(__dirname, "frontend"),
   stdio: ["inherit", "pipe", "pipe"],
 });
@@ -95,7 +97,7 @@ frontend.stdout.on("data", (data) => logger("[Frontend] ", data));
 frontend.stderr.on("data", (data) => logger("[Frontend] ", data));
 
 // spawn child process in api folder
-const api = spawn("npm.cmd", ["run", isProd ? "start" : "dev"], {
+const api = spawn(npm, ["run", isProd ? "start" : "dev"], {
   cwd: path.join(__dirname, "api"),
   stdio: ["inherit", "pipe", "pipe"],
 });
