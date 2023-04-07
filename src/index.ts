@@ -64,8 +64,8 @@ app.use("/",
   })
 );
 
-app.listen(env === "prod" ? 80 : 8080, () => {
-  console.log("Server listening on port " + (isProd ? 80 : 8080));
+app.listen(8080, () => {
+  console.log("Server listening on port " + 8080);
 });
 
 // logger
