@@ -64,7 +64,7 @@ app.use("/",
   })
 );
 
-app.listen(8080, '127.0.0.1', () => {
+app.listen(8080, '0.0.0.0', () => {
   console.log("Server listening on port " + 8080);
 });
 
