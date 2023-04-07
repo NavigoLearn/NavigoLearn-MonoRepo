@@ -17,8 +17,8 @@ frontend and backend via a proxy so they're on the same port.
 
 ## How to run
 ```bash
-git clone --recurse-submodules git@github.com:NavigoLearn/Navigo-FrontEnd.git
-cd Navigo-FrontEnd
+git clone --recurse-submodules git@github.com:NavigoLearn/NavigoLearn-MonoRepo.git
+cd NavigoLearn-MonoRepo
 npm install
 npm run dev
 # and connect to http://localhost:8080 in browser
