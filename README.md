@@ -17,8 +17,8 @@ frontend and backend via a proxy so they're on the same port.
 
 ## How to run
 ```bash
-git clone --recurse-submodules https://github.com/NavigoLearn/NavigoLean-MonoRepo.git
-cd API
+git clone --recurse-submodules git@github.com:NavigoLearn/NavigoLearn-MonoRepo.git
+cd NavigoLearn-MonoRepo
 npm install
 npm run dev
 # and connect to http://localhost:8080 in browser
@@ -31,11 +31,8 @@ npm install
 npm run dev
 ```
 
-# Update submodules
+## Update submodules
 ### This should be done by the CI when a new commit is pushed to the submodules
 ```bash
 git submodule update --remote
 ```
-
-
-

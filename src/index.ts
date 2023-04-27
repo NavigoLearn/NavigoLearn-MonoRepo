@@ -63,13 +63,13 @@ app.use(
 
     router: {
       // when / api goes to http://localhost:3001/api
-      "/api": "http://localhost:3001/",
+      "/api/": "http://localhost:3001/",
     },
   })
 );
 
-app.listen(env === "prod" ? 80 : 8080, () => {
-  console.log("Server listening on port " + (isProd ? 80 : 8080));
+app.listen(8080, '0.0.0.0', () => {
+  console.log("Server listening on port " + 8080);
 });
 
 // logger
