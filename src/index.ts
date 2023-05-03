@@ -3,6 +3,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { spawn, spawnSync } from "child_process";
 import path from "path";
 import * as os from "os";
+import cors from "cors";
 
 let npm = os.platform().toString() === "win32" ? "npm.cmd" : "npm";
 const env = process.env.NODE_ENV || "dev";
@@ -55,12 +56,30 @@ process.stderr.write = function (
 
 const app = express();
 
+app.use((req, res, next) => {
+  // Access-Control-Allow-Origin: http://localhost:8080, http://127.0.0.1:8080
+  // Access-Control-Allow-Methods: GET, POST, PUT
+  // Access-Control-Allow-Headers: Content-Type, Authorization
+  // Access-Control-Allow-Credentials: true
+  // Access-Control-Max-Age: 86400
+
+  res.header("Access-Control-Allow-Origin", "127.0.0.1:8080");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Max-Age", "86400");
+  next();
+});
+
+app.use(cors());
+
 app.use(
   "/",
   createProxyMiddleware({
     target: "http://localhost:3000", // The URL for the front-end app
     changeOrigin: true,
-
+// @ts-ignore
+    credentials: true,
     router: {
       // when / api goes to http://localhost:3001/api
       "/api/": "http://localhost:3001/",
