@@ -5,6 +5,7 @@
 # go to the backend directory
 cd src/api || exit 1
 # build the project
+rm -rf dist
 npm i
 npm run build
 
@@ -19,6 +20,7 @@ screen -dmS api npm run start
 
 # build the frontend
 cd ../frontend || exit 1
+rm -rf dist
 npm i
 npm run build
 
