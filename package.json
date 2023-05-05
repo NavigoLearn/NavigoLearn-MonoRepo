@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=prod ts-node ./src/index.ts",
+    "deploy": "source src/api/env/production.env && docker-compose up",
     "dev": "ts-node ./src/index.ts"
   },
   "keywords": [],
