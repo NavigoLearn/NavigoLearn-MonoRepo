@@ -1,6 +1,6 @@
 [submodule "src/frontend"]
 	path = src/frontend
-	url = https://github.com/NavigoLearn/Navigo-FrontEnd.git
+	url = git@github.com:NavigoLearn/Navigo-FrontEnd.git
 [submodule "src/api"]
 	path = src/api
-	url = https://github.com/NavigoLearn/API.git
+	url = git@github.com:NavigoLearn/API.git
