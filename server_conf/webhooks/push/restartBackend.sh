@@ -3,7 +3,13 @@
 # define branch name
 branch_name="prod"
 
-# Start the frontend
+# update environment variables
+cd env || exit 1 # change directory to env folder
+git checkout $branch_name # checkout to the branch
+git pull origin $branch_name # pull the latest code
+cd .. # change directory to root folder
+
+# Start the backend
 cd src/frontend || exit 1 # change directory to frontend folder
 git checkout $branch_name # checkout to the branch
 git pull origin $branch_name # pull the latest code
