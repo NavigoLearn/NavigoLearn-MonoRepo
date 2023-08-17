@@ -1,8 +1,10 @@
 # Navigo Learn - MonoRepo
-This is the mono repo for the Navigo Learn project. It contains the following projects:
+This is the repo for the NavigoLearn project. It contains the following projects:
   - [Navigo-Frontend](https://github.com/Navigolearn/Navigo-FrontEnd)
   - [API](https://github.com/NavigoLearn/API)
-  - Glue (this repo)
+  - Glue (in this repo)
+
+This repository is used purely to run the app locally and to call the update hook for CI/CD.
 
 ## Glue
 This is the glue between the frontend and the API. 
