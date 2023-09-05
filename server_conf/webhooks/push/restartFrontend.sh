@@ -16,4 +16,9 @@ session_list=$(screen -ls | grep "frontend" | awk '{print $1}')
 for session_id in $session_list; do
     screen -X -S $session_id quit
 done
+
+# Remove the cache
+rm -rf /var/cache/nginx/frontend/*
+
+# Start the frontend
 screen -dmS frontend node entry.mjs # start the frontend

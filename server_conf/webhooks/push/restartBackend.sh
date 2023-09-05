@@ -22,4 +22,9 @@ session_list=$(screen -ls | grep "api" | awk '{print $1}')
 for session_id in $session_list; do
     screen -X -S $session_id quit
 done
-screen -dmS api npm run start # start the frontend
+
+# Remove the cache
+rm -rf /var/cache/nginx/backend/*
+
+# Start the backend
+screen -dmS api npm run start
