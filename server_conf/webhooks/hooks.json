@@ -1,0 +1,66 @@
+[
+  {
+    "id": "push-frontend",
+    "execute-command": "/home/(user)/NavigoLearn-MonoRepo/server_conf/webhooks/push/restartFrontend.sh",
+    "command-working-directory": "/home/(user)/NavigoLearn-MonoRepo/",
+    "response-message": "Executing deploy script...",
+    "trigger-rule": {
+      "and": [
+        {
+          "_comment": "Check secret",
+          "match": {
+            "type": "payload-hash-sha1",
+            "secret": "(Secret)",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature"
+            }
+          }
+        },
+        {
+          "_comment": "Check branch name",
+          "match": {
+            "type": "value",
+            "value": "refs/heads/(Branch)",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "push-backend",
+    "execute-command": "/home/(user)/NavigoLearn-MonoRepo/server_conf/webhooks/push/restartBackend.sh",
+    "command-working-directory": "/home/(user)/NavigoLearn-MonoRepo/",
+    "response-message": "Executing deploy script...",
+    "trigger-rule": {
+      "and": [
+        {
+          "_comment": "Check secret",
+          "match": {
+            "type": "payload-hash-sha1",
+            "secret": "(Secret)",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature"
+            }
+          }
+        },
+        {
+          "_comment": "Check branch name",
+          "match": {
+            "type": "value",
+            "value": "refs/heads/(Branch)",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
+  }
+]
