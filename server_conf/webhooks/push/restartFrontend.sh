@@ -5,6 +5,7 @@ branch_name="prod"
 
 # Start the frontend
 cd src/frontend || exit 1 # change directory to frontend folder
+git reset --hard # reset the changes
 git checkout $branch_name # checkout to the branch
 git pull origin $branch_name # pull the latest code
 npm install # install the dependencies

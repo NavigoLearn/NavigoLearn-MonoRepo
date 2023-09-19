@@ -7,11 +7,13 @@ cd src/api || exit 1 # change directory to frontend folder
 
 # update environment variables
 cd env || exit 1 # change directory to env folder
+git reset --hard # reset the changes
 git checkout $branch_name # checkout to the branch
 git pull origin $branch_name # pull the latest code
 cd .. # change directory to root folder
 
 # Start the backend
+git reset --hard # reset the changes
 git checkout $branch_name # checkout to the branch
 git pull origin $branch_name # pull the latest code
 npm install # install the dependencies
