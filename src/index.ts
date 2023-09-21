@@ -1,129 +1,106 @@
-import express from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
-import { spawn, spawnSync } from "child_process";
+import express, { Request, Response, NextFunction } from "express";
+import { createProxyMiddleware, Options } from "http-proxy-middleware";
+import {
+  spawn,
+  spawnSync,
+  SpawnSyncReturns,
+} from "child_process";
 import path from "path";
 import * as os from "os";
 import cors from "cors";
 
-let npm = os.platform().toString() === "win32" ? "npm.cmd" : "npm";
-const env = process.env.NODE_ENV || "dev";
-const isProd = env === "prod";
+let npm: string = os.platform() === "win32" ? "npm.cmd" : "npm";
+const NODE_ENV: string = process.env.NODE_ENV || "dev";
+const isProd: boolean = NODE_ENV === "prod";
 
-console.log("Starting Navigo in " + env + " mode");
-// installing dependencies
-console.log("Installing dependencies...");
-const npmInstall = spawnSync(npm, ["install"], {
-  cwd: path.join(__dirname, "frontend"),
-  stdio: "inherit",
-});
-
-if (npmInstall.status !== 0) {
-  console.error("Failed to install frontend dependencies");
-  process.exit(1);
-}
-const npmInstall2 = spawnSync(npm, ["install"], {
-  cwd: path.join(__dirname, "api"),
-  stdio: "inherit",
-});
-if (npmInstall2.status !== 0) {
-  console.error("Failed to install api dependencies");
-  process.exit(1);
-}
-
-// setup prefix to stdout and stderr
-const globalPrefix = "[Navigo] ";
-const stdoutWrite = process.stdout.write;
-// @ts-ignore
-process.stdout.write = function (
-  chunk: string | Buffer,
-  encoding: BufferEncoding | undefined,
-  callback?: () => void
-): boolean {
-  const modifiedChunk = Buffer.from(globalPrefix + chunk.toString(), "utf-8");
-  return stdoutWrite.call(process.stdout, modifiedChunk, encoding, callback);
+// unified console logging with environment info.
+const envConsoleLog = (message: string) => {
+  console.log(`Starting Navigo in ${NODE_ENV} mode - ${message}`);
 };
 
-const stderrWrite = process.stderr.write;
-// @ts-ignore
-process.stderr.write = function (
-  chunk: string | Buffer,
-  encoding: BufferEncoding | undefined,
-  callback?: () => void
-): boolean {
-  const modifiedChunk = Buffer.from(globalPrefix + chunk.toString(), "utf-8");
-  return stderrWrite.call(process.stderr, modifiedChunk, encoding, callback);
+const installDependencies = (folderName: string) => {
+  envConsoleLog(`installing ${folderName} dependencies...`);
+  const currentPath: string = path.join(__dirname, folderName);
+  const npmInstall: SpawnSyncReturns<Buffer> = spawnSync(npm, [ "install" ], { cwd: currentPath, stdio: "inherit" });
+
+  if (npmInstall.status !== 0) {
+    console.error(`Failed to install ${folderName} dependencies`);
+    process.exit(1);
+  }
 };
 
-const app = express();
+const redirectWrite = (processType: any) => {
+  const originalWrite = processType.write;
+  processType.write = (chunk: string | Buffer, encoding?: BufferEncoding | undefined, callback?: () => void) => {
+    const modifiedChunk: Buffer = Buffer.from("[Navigo] " + chunk.toString(), "utf-8");
+    return originalWrite.call(processType, modifiedChunk, encoding, callback);
+  };
+};
 
-app.use((req, res, next) => {
-  // Access-Control-Allow-Origin: http://localhost:8080, http://127.0.0.1:8080
-  // Access-Control-Allow-Methods: GET, POST, PUT
-  // Access-Control-Allow-Headers: Content-Type, Authorization
-  // Access-Control-Allow-Credentials: true
-  // Access-Control-Max-Age: 86400
-
+const setUpHeaders = (req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "127.0.0.1:8080");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Max-Age", "86400");
   next();
-});
-
-app.use(cors());
-
-app.use(
-  "/",
-  createProxyMiddleware({
-    target: "http://localhost:3000", // The URL for the front-end app
-    changeOrigin: true,
-// @ts-ignore
-    credentials: true,
-    router: {
-      // when / api goes to http://localhost:3001/api
-      "/api/": "http://localhost:3001/",
-    },
-  })
-);
-
-app.listen(8080, '0.0.0.0', () => {
-  console.log("Server listening on port " + 8080);
-});
-
-// logger
-const logger = (prefix: string, data: any) => {
-  // check if data toString is empty or new line
-  data = data.toString().trim();
-  // replace new line with new line + prefix
-  data = data.replaceAll(
-    "\n",
-    `\n${Array(prefix.length + globalPrefix.length)
-      .fill(" ")
-      .join("")}`
-  );
-
-  if (data === "") return;
-  console.log(prefix + data);
 };
 
-// spawn a child process in frontend folder
-const frontend = spawn(npm, ["run", isProd ? "start" : "dev"], {
-  cwd: path.join(__dirname, "frontend"),
-  stdio: ["inherit", "pipe", "pipe"],
-});
-frontend.stdout.on("data", (data) => logger("[Frontend] ", data));
-frontend.stderr.on("data", (data) => logger("[Frontend] ", data));
+const options: Options = {
+  target: "http://localhost:4321",
+  changeOrigin: true,
+  router: { "/api/": "http://localhost:3001/" },
+};
 
-// spawn child process in api folder
-const api = spawn(npm, ["run", isProd ? "start" : "dev"], {
-  cwd: path.join(__dirname, "api"),
-  stdio: ["inherit", "pipe", "pipe"],
-});
-api.stdout.on("data", (data) => logger("[API] ", data));
-api.stderr.on("data", (data) => logger("[API] ", data));
+const redirector = (paths: string | string[]) => {
+  return createProxyMiddleware(paths, options);
+};
 
-// kill child processes on exit
+const logger = (prefix: string, data: any, isError: boolean = false) => {
+  // uppercase prefix and pad it to 10 characters
+  prefix = prefix.toUpperCase();
+  prefix = prefix.padEnd(10, " ") + " ";
+
+  // convert data to string and trim it
+  data = data.toString().trim();
+  data = data.replaceAll("\n", `\n${Array(prefix.length + 11).fill(" ").join("")}`);
+
+  if (data !== "") {
+    const coloredData = isError ? `\x1b[31m${prefix + data}\x1b[0m` : prefix + data; // `\x1b[31m` starts red color and `\x1b[0m` resets it
+    console.log(coloredData);
+  }
+};
+
+const spawnChild = (folderName: string, npmCMD: string) => {
+  const cwd: string = path.join(__dirname, folderName);
+  const child = spawn(npm, [ "run", npmCMD ], { cwd, stdio: [ "inherit", "pipe", "pipe" ] });
+
+  if (!child || !child.stdout || !child.stderr) {
+    console.error(`Failed to spawn child process for ${folderName}`);
+
+    return process.exit(1);
+  }
+  child.stdout.on("data", (data) => logger(`[${folderName}]`, data));
+  child.stderr.on("data", (data) => logger(`[${folderName}]`, data, true));
+
+  return child;
+};
+
+envConsoleLog('Initializing...');
+installDependencies("frontend");
+installDependencies("api");
+redirectWrite(process.stdout);
+redirectWrite(process.stderr);
+
+const app = express();
+app.use(setUpHeaders);
+app.use(cors());
+app.use(redirector("/"));
+app.listen(8080, '0.0.0.0', () => envConsoleLog(`Server listening on port ${8080}`));
+
+const frontend = spawnChild("frontend", isProd ? "start" : "dev");
+const api = spawnChild("api", isProd ? "start" : "dev");
+
 process.on("exit", () => {
   frontend.kill();
   api.kill();
