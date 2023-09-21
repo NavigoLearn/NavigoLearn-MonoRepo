@@ -13,9 +13,9 @@ frontend and backend via a proxy so they're on the same port.
 
 ## Requirements
   - Git
-  - NodeJS
+  - NodeJS 18 (LTS) or higher
   - NPM
-  - MariaDB
+  - MariaDB 10.11 (LTS) or higher
 
 ## How to run
 ```bash
