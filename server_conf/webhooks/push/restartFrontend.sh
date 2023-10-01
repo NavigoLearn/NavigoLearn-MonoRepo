@@ -9,7 +9,9 @@ change_dir_and_check() {
    }
 }
 # Start the frontend
-change_dir_and_check src/frontend
+change_dir_and_check src/frontend/segment-env
+git reset --hard && git checkout master && git pull origin master
+change_dir_and_check ..
 git reset --hard && git checkout $branch_name && git pull origin $branch_name
 npm install && npm run build || exit 1
 change_dir_and_check dist/server
